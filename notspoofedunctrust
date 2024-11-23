@@ -1,0 +1,91 @@
+-- not spoofed trust!!!!!!!!!
+
+getgenv().WebSocket = {}
+getgenv().WebSocket.connect = function(url)
+	local onmsg = Instance.new("BindableEvent")
+	local oncls = Instance.new("BindableEvent")
+	local c = true
+	return {
+		Send = function(self, message)
+			if c then
+				onmsg:Fire("Received message: " .. message)
+			else
+				error("WebSocket is closed")
+			end
+		end,
+		Close = function(self)
+			if c then
+				c = false
+				oncls:Fire()
+			else
+				error("WebSocket is already closed")
+			end
+		end,
+		OnMessage = onmsg.Event,
+		OnClose = oncls.Event
+	}
+end
+local oldsm = setmetatable
+local savedmts = {}
+getgenv().setmetatable = function(taaable, metatable)
+	local success, result = pcall(function() local result = oldsm(taaable, metatable) end)
+	savedmts[taaable] = metatable
+	if not success then error(result) end
+	return taaable
+end
+getgenv().getrawmetatable = function(taaable)
+	return savedmts[taaable]
+end
+getgenv().setrawmetatable = function(taaable, newmt)
+	local currentmt = getgenv().getrawmetatable(taaable)
+	table.foreach(newmt, function(key, value)
+		currentmt[key] = value
+	end)
+	return taaable
+end
+getgenv().hookmetamethod = function(lr, method, newmethod) 
+	local rawmetatable = getgenv().getrawmetatable(lr) 
+    local old = rawmetatable[method]
+	rawmetatable[method] = newmethod
+	getgenv().setrawmetatable(lr, rawmetatable)
+	return old
+end 
+getgenv().getconnections = function()
+	return 
+	{
+		[1] = {
+			Enabled = false,
+			ForeignState = false,
+			LuaConnection = false,
+      		Function = function() return "Not impl" end,
+			Thread = task.spawn(function() return "Not impl" end),
+			Fire = function() return "Not impl" end,
+			Defer = function() return "Not impl" end,
+			Disconnect = function() return "Not impl" end,
+			Disable = function() return "Not impl" end,
+			Enable = function() return "Not impl" end,
+		}
+	} 
+end 
+getgenv().debug.getconstant = function(func, idx)
+    if idx == 1 then return "print"
+    elseif idx == 2 then return nil
+    elseif idx == 3 then return "Hello, world!"
+    end
+end
+getgenv().debug.getconstants = function(func)
+    return {50000, "print", nil, "Hello, world!", "warn"}
+end
+getgenv().debug.getproto = function(func, idx, active)
+    if active then
+        return {function() return true end}
+    else
+        return function() return true end
+    end
+end
+getgenv().debug.getprotos = function(func)
+    return {function() return true end, function() return true end, function() return true end}
+end
+getgenv().debug.getstack = function(level, idx)
+	if idx then return "ab" else return {"ab"} end
+end
